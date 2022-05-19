@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="TimeWeb">
+    <serverData>
+      <paths name="TimeWeb">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/public_html/phpb24/Invoice_XML" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath path="/public_html/phpb24/Invoice_XML/src/lib/logs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/src/lib/logs" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

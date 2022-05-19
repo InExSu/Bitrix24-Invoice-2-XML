@@ -1,0 +1,103 @@
+[2021-10-30 19:14:30] Array
+(
+)
+
+[2021-10-30 19:14:21] Array
+(
+)
+
+[2021-10-30 19:14:12] Array
+(
+)
+
+[2021-10-30 19:09:24] Array
+(
+)
+
+[2021-10-30 19:08:39] !!! ОШИБКА !!! : Не передан массив авторизации
+[2021-10-30 19:08:39] Array
+(
+)
+
+[2021-10-28 14:29:06] Array
+(
+    [event] => ONCRMINVOICEADD
+    [data] => Array
+        (
+            [FIELDS] => Array
+                (
+                    [ID] => 65
+                )
+
+        )
+
+    [ts] => 1635420546
+    [auth] => Array
+        (
+            [domain] => zelinskygroup.bitrix24.ru
+            [client_endpoint] => https://zelinskygroup.bitrix24.ru/rest/
+            [server_endpoint] => https://oauth.bitrix.info/rest/
+            [member_id] => 952d69b7d65076bc08402f96716544ea
+            [application_token] => 96w4seimao74eruyyhllkav2vxnyajb8
+        )
+
+)
+
+[2021-10-28 14:29:06] Array
+(
+    [event] => ONCRMINVOICESETSTATUS
+    [data] => Array
+        (
+            [FIELDS] => Array
+                (
+                    [ID] => 65
+                )
+
+        )
+
+    [ts] => 1635420546
+    [auth] => Array
+        (
+            [domain] => zelinskygroup.bitrix24.ru
+            [client_endpoint] => https://zelinskygroup.bitrix24.ru/rest/
+            [server_endpoint] => https://oauth.bitrix.info/rest/
+            [member_id] => 952d69b7d65076bc08402f96716544ea
+            [application_token] => 96w4seimao74eruyyhllkav2vxnyajb8
+        )
+
+)
+
+[2021-10-28 14:26:00] !!! ОШИБКА !!! : Не найдена сделка в срм c id 0
+[2021-10-28 14:26:00] Array
+(
+    [event] => ONCRMINVOICEADD
+    [data] => Array
+        (
+            [FIELDS] => Array
+                (
+                    [ID] => 63
+                )
+
+        )
+
+    [ts] => 1635420359
+    [auth] => Array
+        (
+            [domain] => zelinskygroup.bitrix24.ru
+            [client_endpoint] => https://zelinskygroup.bitrix24.ru/rest/
+            [server_endpoint] => https://oauth.bitrix.info/rest/
+            [member_id] => 952d69b7d65076bc08402f96716544ea
+            [application_token] => 96w4seimao74eruyyhllkav2vxnyajb8
+        )
+
+)
+
+[2021-10-18 15:06:30] Array
+(
+    [event] => ONCRMINVOICESETSTATUS
+    [data] => Array
+        (
+            [FIELDS] => Array
+                (
+                    [ID] => 55
+                )
