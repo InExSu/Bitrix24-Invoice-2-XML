@@ -1,7 +1,6 @@
 files/
 logs/
 
-config.php
-log.txt
-test.php
-
+/confog.php
+/log.txt
+/test.php
