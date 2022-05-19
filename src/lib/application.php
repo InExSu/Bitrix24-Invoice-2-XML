@@ -69,15 +69,16 @@ class Application
         }
 
         // потом удали
-        $crmInvoiceFields = CRest::call(
-            'crm.invoice.fields',
-            [
-                'id' => $idInvoice
-            ]
-        );
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r('$crmInvoiceFields' . PHP_EOL . $crmInvoiceFields, true));
-//
+//        $crmInvoiceFields = CRest::call(
+//            'crm.invoice.fields',
+//            [
+//                'id' => $idInvoice
+//            ]
+//        );
+//        $logger = new Logger ("log.txt");
+////        $logger->write(print_r('$crmInvoiceFields' . PHP_EOL . $crmInvoiceFields, true));
+//        $logger->write(print_r($crmInvoiceFields['result'], true));
+////
 
         $arInvoiceUserfields = CRest::call('crm.invoice.userfield.list');
         if (!empty($arInvoiceUserfields["result"])) {
@@ -102,6 +103,17 @@ class Application
 
         if (empty($arDeal["result"]))
             throw new Exception("Не найдена сделка в срм c id " . $idDeal);
+
+        // потом удали
+        $crmDealFields = CRest::call(
+            'crm.deal.fields',
+            [
+                'id' => $idDeal
+            ]
+        );
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r('crm.deal.fields' . PHP_EOL.'$crmDealFields' . PHP_EOL . $crmDealFields, true));
+//
 
         $arDealUserfields = CRest::call('crm.deal.userfield.list');
 

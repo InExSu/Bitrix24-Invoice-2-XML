@@ -1,6 +1,7 @@
+.idea/
 files/
 logs/
 
-/confog.php
+/config.php
 /log.txt
 /test.php
