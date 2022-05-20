@@ -121,6 +121,11 @@ class Application
     {
 
         $company_Id = $arDeal['result']['COMPANY_ID'];
+// TODO
+        log($arDeal);
+        log($company_Id);
+//
+
         if ($company_Id !== '') {
 // взять имя компании
             $id = $arDeal['result']['ID'];
