@@ -2,6 +2,19 @@
 
 class Application
 {
+    public const SHIPPER = "UF_CRM_1610359373";
+    public const CONSUMER = "UF_CRM_5F9BF01B658A8";
+    public const CONSIGNEE = "UF_CRM_613AF9D4D685D";
+    public const PAYER = "UF_CRM_5F9BF01B7389A";
+    public const DELIVERY_ADRESS = "UF_CRM_60D96D778591E";
+    public const CONTRACT = "UF_CRM_1608889603";
+    public const DELIVERY_TYPE = "UF_CRM_5F9BF01B5504B";
+    public const DELIVERY_CONTACT = "UF_CRM_60D96D7707C69";
+    public const CONTRACT_IBLOCK_ID = 37;
+    public const TERMS_OF_PAYMENT = 'UF_CRM_613AF9D4CF1D7';
+    public const TIME_DELIVERY = 'UF_CRM_616D4E97213B7';
+    public const SHIPMENT_TRANSIT = 'UF_CRM_6144A3A9DEE1D';
+    public $addressWithGeo = "UF_CRM_60D96D778591E";
     protected $xml;
 
     public function run(): bool
@@ -93,9 +106,9 @@ class Application
             throw new Exception("Не найдена сделка в срм c id " . $idDeal);
 
         // потом удали
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($arDeal, true));
-        $logger->write('$arDeal' . PHP_EOL);
+//        $logger = new Logger ("log.txt");
+//        $logger->write(print_r($arDeal, true));
+//        $logger->write('$arDeal' . PHP_EOL);
 //
 
         $arDealUserfields = CRest::call('crm.deal.userfield.list');
@@ -113,18 +126,12 @@ class Application
             }
         }
 
+        dealArrayAddCompanyName($arDeal);
         return $arDeal["result"];
     }
-
-    protected function dealArrayAddCompanyName($arDeal): array
-    {
-        $company_Id = $arDeal['result']['COMPANY_ID'];
-        if ($company_Id !== ''){
-// взять имя компании
-            $title = TITLE;
-        }
-
-    }
+}
+class CRMFields
+{
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
@@ -163,7 +170,7 @@ class Application
 //        $logger->write(print_r('$arInvoice[CRMFields::DELIVERY_ADRESS]' . $ar2sting, true));
 
         return $arDealClean;
-    }
+    } // грузоотправитель (список)
 
     public function stringCutGeo($hayStack, string $needle)
     { //    адресу обрезать геокоординаты
@@ -172,7 +179,9 @@ class Application
             $hayStack = strtok($hayStack, $needle);
         }
         return $hayStack;
-    }
+    } //Потребитель
+
+//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
 
     public function getRequisites(int $idCompnay): array
     {
@@ -246,7 +255,7 @@ class Application
             ];
         }
         return $arRequisites;
-    }
+    } //грузополучатель для ТК
 
     public function getContactPhone(int $idContact): array
     {
@@ -280,7 +289,9 @@ class Application
             }
         }
         return $sContact;
-    }
+    } //плательщик для ТК
+
+//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
     protected function getDealProducts(int $idInvoice): array
     {
@@ -327,7 +338,7 @@ class Application
 
 
         return $arCrmRequest["result"];
-    }
+    } // Адрес доставки для ТК
 
     protected function getProductProperties(): array
     {
@@ -399,7 +410,7 @@ class Application
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    }
+    } // договор поставки
 
     protected function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
     {
@@ -452,14 +463,16 @@ class Application
 
         }
         return $arClearProducts;
-    }
+    } // тип доставки
 
     protected function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
     {
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    }
+    } // Контактное лицо грузополучателя
+
+    //public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     public function arrayToXml(array $array, &$xml, $elementName = "")
     {
@@ -477,7 +490,9 @@ class Application
                 $xml->addChild("$key", "$value");
             }
         }
-    }
+    } // инфоблок контрактов
+
+    // Добавил 2021-10-29
 
     protected function doFinalActions(int $idDeal): bool
     {
@@ -490,7 +505,7 @@ class Application
             return true;
         } else
             return false;
-    }
+    } // Условия оплаты
 
     public function getListValue(int $elementId, int $iblockId)
     {
@@ -508,29 +523,23 @@ class Application
 
         return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
 
-    }
-}
-
-class CRMFields
-{
-    public const SHIPPER = "UF_CRM_1610359373"; // грузоотправитель (список)
-    public const CONSUMER = "UF_CRM_5F9BF01B658A8"; //Потребитель
-//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
-    public const CONSIGNEE = "UF_CRM_613AF9D4D685D"; //грузополучатель для ТК
-    public const PAYER = "UF_CRM_5F9BF01B7389A"; //плательщик для ТК
-//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
-    public const DELIVERY_ADRESS = "UF_CRM_60D96D778591E"; // Адрес доставки для ТК
-    public const CONTRACT = "UF_CRM_1608889603";
-    public const DELIVERY_TYPE = "UF_CRM_5F9BF01B5504B"; // договор поставки
-    public const DELIVERY_CONTACT = "UF_CRM_60D96D7707C69"; // тип доставки
-    public const CONTRACT_IBLOCK_ID = 37; // Контактное лицо грузополучателя
-    //public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
-    public const TERMS_OF_PAYMENT = 'UF_CRM_613AF9D4CF1D7'; // инфоблок контрактов
-
-    // Добавил 2021-10-29
-    public const TIME_DELIVERY = 'UF_CRM_616D4E97213B7'; // Условия оплаты
-    public const SHIPMENT_TRANSIT = 'UF_CRM_6144A3A9DEE1D'; // Условия оплаты:
+    } // Условия оплаты:
 
     // Добавил 2022-03-09
-    public $addressWithGeo = "UF_CRM_60D96D778591E"; // Отгрузка транзитом
+
+    protected function dealArrayAddCompanyName($arDeal): array
+    {
+        $company_Id = $arDeal['result']['COMPANY_ID'];
+        if ($company_Id !== '') {
+// взять имя компании
+            $id = $arDeal['result']['ID'];
+// CRest::call('crm.deal.get', ['id' => $idDeal]);
+            $arCompany = CRest::call('crm.company.get', $id);
+            $title = $arCompany['TITLE'];
+            $logger = new Logger ("log.txt");
+            $logger->write(print_r($title, true));
+            $logger->write(print_r('$title' . PHP_EOL, true));
+//        }
+        }
+    } // Отгрузка транзитом
 }
