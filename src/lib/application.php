@@ -2,19 +2,6 @@
 
 class Application
 {
-    public const SHIPPER = "UF_CRM_1610359373";
-    public const CONSUMER = "UF_CRM_5F9BF01B658A8";
-    public const CONSIGNEE = "UF_CRM_613AF9D4D685D";
-    public const PAYER = "UF_CRM_5F9BF01B7389A";
-    public const DELIVERY_ADRESS = "UF_CRM_60D96D778591E";
-    public const CONTRACT = "UF_CRM_1608889603";
-    public const DELIVERY_TYPE = "UF_CRM_5F9BF01B5504B";
-    public const DELIVERY_CONTACT = "UF_CRM_60D96D7707C69";
-    public const CONTRACT_IBLOCK_ID = 37;
-    public const TERMS_OF_PAYMENT = 'UF_CRM_613AF9D4CF1D7';
-    public const TIME_DELIVERY = 'UF_CRM_616D4E97213B7';
-    public const SHIPMENT_TRANSIT = 'UF_CRM_6144A3A9DEE1D';
-    public $addressWithGeo = "UF_CRM_60D96D778591E";
     protected $xml;
 
     public function run(): bool
@@ -145,27 +132,7 @@ class Application
 //        }
         }
     } // Отгрузка транзитом
-}
 
-class CRMFields
-{
-
-    public function getListValue(int $elementId, int $iblockId)
-    {
-        $arDealEnumFields = CRest::call(
-            'lists.element.get',
-            [
-                "FILTER"         =>
-                    [
-                        'ID' => $elementId
-                    ],
-                "IBLOCK_ID"      => $iblockId,
-                "IBLOCK_TYPE_ID" => "lists"
-            ]
-        );
-
-        return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
-    } // грузоотправитель (список)
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
@@ -208,7 +175,8 @@ class CRMFields
 
 //    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
 
-    public function stringCutGeo($hayStack, string $needle)
+    public
+    function stringCutGeo($hayStack, string $needle)
     { //    адресу обрезать геокоординаты
 
         if (strpos($hayStack, $needle) !== false) {
@@ -217,7 +185,8 @@ class CRMFields
         return $hayStack;
     } //грузополучатель для ТК
 
-    public function getRequisites(int $idCompnay): array
+    public
+    function getRequisites(int $idCompnay): array
     {
         $arRequisites = [
             "компанияНаименование"  => "-",
@@ -293,7 +262,8 @@ class CRMFields
 
 //    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
-    public function getContactPhone(int $idContact): array
+    public
+    function getContactPhone(int $idContact): array
     {
         $sContact = [
             "фамилия"  => "",
@@ -327,7 +297,8 @@ class CRMFields
         return $sContact;
     } // Адрес доставки для ТК
 
-    protected function getDealProducts(int $idInvoice): array
+    protected
+    function getDealProducts(int $idInvoice): array
     {
         $arCrmRequest = CRest::call(
             'crm.productrow.list',
@@ -374,7 +345,8 @@ class CRMFields
         return $arCrmRequest["result"];
     }
 
-    protected function getProductProperties(): array
+    protected
+    function getProductProperties(): array
     {
         $arProperties = [];
 
@@ -386,7 +358,8 @@ class CRMFields
         return $arProperties;
     } // договор поставки
 
-    protected function getProductsFull(array $arProductIds = [], array $arProps = []): array
+    protected
+    function getProductsFull(array $arProductIds = [], array $arProps = []): array
     {
         $arProducts = [];
 
@@ -446,7 +419,8 @@ class CRMFields
         return $arProducts;
     } // тип доставки
 
-    protected function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
+    protected
+    function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
     {
         if (empty($arDirtyProducts))
             return [];
@@ -499,18 +473,20 @@ class CRMFields
         return $arClearProducts;
     } // Контактное лицо грузополучателя
 
-    //public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
-    protected function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
+    protected
+    function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
     {
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
     } // инфоблок контрактов
 
-    // Добавил 2021-10-29
+// Добавил 2021-10-29
 
-    public function arrayToXml(array $array, &$xml, $elementName = "")
+    public
+    function arrayToXml(array $array, &$xml, $elementName = "")
     {
         foreach ($array as $key => $value) {
             if (is_array($value)) {
@@ -540,8 +516,38 @@ class CRMFields
         } else
             return false;
     }
-} // Условия оплаты:
 
-// Добавил 2022-03-09
+    public function getListValue(int $elementId, int $iblockId)
+    {
+        $arDealEnumFields = CRest::call(
+            'lists.element.get',
+            [
+                "FILTER"         =>
+                    [
+                        'ID' => $elementId
+                    ],
+                "IBLOCK_ID"      => $iblockId,
+                "IBLOCK_TYPE_ID" => "lists"
+            ]
+        );
 
+        return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
+    }
+}
 
+class CRMFields
+{
+    public const SHIPPER = "UF_CRM_1610359373";
+    public const CONSUMER = "UF_CRM_5F9BF01B658A8";
+    public const CONSIGNEE = "UF_CRM_613AF9D4D685D";
+    public const PAYER = "UF_CRM_5F9BF01B7389A";
+    public const DELIVERY_ADRESS = "UF_CRM_60D96D778591E";
+    public const CONTRACT = "UF_CRM_1608889603";
+    public const DELIVERY_TYPE = "UF_CRM_5F9BF01B5504B";
+    public const DELIVERY_CONTACT = "UF_CRM_60D96D7707C69";
+    public const CONTRACT_IBLOCK_ID = 37;
+    public const TERMS_OF_PAYMENT = 'UF_CRM_613AF9D4CF1D7';
+    public const TIME_DELIVERY = 'UF_CRM_616D4E97213B7';
+    public const SHIPMENT_TRANSIT = 'UF_CRM_6144A3A9DEE1D';
+    public $addressWithGeo = "UF_CRM_60D96D778591E";
+}
