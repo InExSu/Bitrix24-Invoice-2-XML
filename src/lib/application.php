@@ -15,7 +15,7 @@ class Application
         $this->checkAuth($arRequest);
 
         if (empty($arRequest["event"]) || empty($arRequest["data"]))
-            throw new \Exception("Отсутствуют данные для обработки");
+            throw new Exception("Отсутствуют данные для обработки");
 
         $idInvoice = (int)$arRequest['data']['FIELDS']['ID'];
         // if (empty($arRequest["event"]) || $arRequest["event"] != "ONCRMINVOICEADD" || $idInvoice <= 0)
@@ -26,7 +26,7 @@ class Application
         $idDeal = (int)$arInvoice["UF_DEAL_ID"];
 
         if ($idInvoice <= 0)
-            throw new \Exception("В счете не указана сделка");
+            throw new Exception("В счете не указана сделка");
 
         $arDeal = $this->getDealData($idDeal);
 
@@ -47,10 +47,10 @@ class Application
     {
 
         if (empty($arRequest) || empty($arRequest["auth"]))
-            throw new \Exception("Не передан массив авторизации");
+            throw new Exception("Не передан массив авторизации");
 
         if ($arRequest["auth"]["application_token"] != APP_TOKEN)
-            throw new \Exception("Передан некорректный токен авторизации");
+            throw new Exception("Передан некорректный токен авторизации");
 
         return true;
     }
@@ -119,6 +119,7 @@ class Application
 
     public function dealArrayAddCompanyName($arDeal)
     {
+
         $company_Id = $arDeal['result']['COMPANY_ID'];
         if ($company_Id !== '') {
 // взять имя компании
@@ -126,9 +127,10 @@ class Application
 // CRest::call('crm.deal.get', ['id' => $idDeal]);
             $arCompany = CRest::call('crm.company.get', $id);
             $title = $arCompany['TITLE'];
-            $logger = new Logger ("log.txt");
-            $logger->write(print_r($title, true));
-            $logger->write(print_r('$title' . PHP_EOL, true));
+//            $logger->write(print_r($arCompany, true));
+//            $logger->write(print_r($arCompany . PHP_EOL, true));
+//            $logger->write(print_r($title, true));
+//            $logger->write(print_r('$title' . PHP_EOL, true));
 //        }
         }
     } // Отгрузка транзитом
@@ -533,6 +535,33 @@ class Application
 
         return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
     }
+
+    public function log($variable)
+    { // вывести в лог имя переменной и значение
+
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($variable, true));
+        $logger->write(variable_Name($variable));
+    }
+
+    public function variable_Name(): string
+    { // вернуть имя переменной
+
+        // читаем обратную трассировку
+        $bt = debug_backtrace();
+
+        // читаем файл
+        $file = file($bt[0]['file']);
+
+        // выбираем точную строку print_var_name($varname)
+        $src = $file[$bt[0]['line'] - 1];
+
+        // шаблон поиска
+        $pat = '#(.*)' . __FUNCTION__ . ' *?\( *?(.*) *?\)(.*)#i';
+
+        // извлечение $varname из совпадения №2
+        return preg_replace($pat, '$2', $src);
+    }
 }
 
 class CRMFields
@@ -551,3 +580,4 @@ class CRMFields
     public const SHIPMENT_TRANSIT = 'UF_CRM_6144A3A9DEE1D';
     public $addressWithGeo = "UF_CRM_60D96D778591E";
 }
+
