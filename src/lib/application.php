@@ -68,18 +68,6 @@ class Application
             throw new Exception("Не найден счет в срм c id " . $idInvoice);
         }
 
-        // потом удали
-//        $crmInvoiceFields = CRest::call(
-//            'crm.invoice.fields',
-//            [
-//                'id' => $idInvoice
-//            ]
-//        );
-//        $logger = new Logger ("log.txt");
-////        $logger->write(print_r('$crmInvoiceFields' . PHP_EOL . $crmInvoiceFields, true));
-//        $logger->write(print_r($crmInvoiceFields['result'], true));
-////
-
         $arInvoiceUserfields = CRest::call('crm.invoice.userfield.list');
         if (!empty($arInvoiceUserfields["result"])) {
 
@@ -128,6 +116,15 @@ class Application
         return $arDeal["result"];
     }
 
+    protected function dealArrayAddCompanyName($arDeal): array
+    {
+        $company_Id = $arDeal['result']['COMPANY_ID'];
+        if ($company_Id !== ''){
+// взять имя компании
+            $title = TITLE;
+        }
+
+    }
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
@@ -135,17 +132,8 @@ class Application
             return [];
 
         // 2022-05-17 отсечь из геокоординаты из
-        // Продолжи отсюда
-
-//        $logger = new Logger ("log.txt");
-
         $addressDost = $arInvoice[CRMFields::DELIVERY_ADRESS];
-//        $logger->write(print_r('$addressDost' . $addressDost, true));
-//        $logger->write(print_r('implode($addressDost)' . $addressDost, true));
-//        $logger->write(print_r('$arInvoice[CRMFields::DELIVERY_ADRESS]' . $arInvoice[CRMFields::DELIVERY_ADRESS], true));
-
         $addressDost = $this->stringCutGeo($addressDost, "|");
-//        $logger->write(print_r('stringCutGeo($addressDost' . $addressDost, true));
 
         $arDealClean = [
             "идСделки"           => $arDeal["ID"],
@@ -502,8 +490,6 @@ class Application
             return true;
         } else
             return false;
-
-
     }
 
     public function getListValue(int $elementId, int $iblockId)
@@ -523,7 +509,6 @@ class Application
         return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
 
     }
-
 }
 
 class CRMFields
