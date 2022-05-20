@@ -122,8 +122,8 @@ class Application
 
         $company_Id = $arDeal['result']['COMPANY_ID'];
 // TODO
-        log($arDeal);
-        log($company_Id);
+        $this->log($arDeal);
+        $this->log($company_Id);
 //
 
         if ($company_Id !== '') {
@@ -138,8 +138,7 @@ class Application
 //            $logger->write(print_r('$title' . PHP_EOL, true));
 //        }
         }
-    } // Отгрузка транзитом
-
+    }
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
@@ -541,12 +540,12 @@ class Application
         return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
     }
 
-    public function log($variable)
+    public function log($variable): void
     { // вывести в лог имя переменной и значение
 
         $logger = new Logger ("log.txt");
         $logger->write(print_r($variable, true));
-        $logger->write(variable_Name($variable));
+        $logger->write($this->variable_Name($variable));
     }
 
     public function variable_Name(): string
