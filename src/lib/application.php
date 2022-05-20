@@ -105,14 +105,9 @@ class Application
             throw new Exception("Не найдена сделка в срм c id " . $idDeal);
 
         // потом удали
-        $crmDealFields = CRest::call(
-            'crm.deal.fields',
-            [
-                'id' => $idDeal
-            ]
-        );
         $logger = new Logger ("log.txt");
-        $logger->write(print_r('crm.deal.fields' . PHP_EOL.'$crmDealFields' . PHP_EOL . $crmDealFields, true));
+        $logger->write(print_r($arDeal, true));
+        $logger->write('$arDeal' . PHP_EOL);
 //
 
         $arDealUserfields = CRest::call('crm.deal.userfield.list');
@@ -132,6 +127,7 @@ class Application
 
         return $arDeal["result"];
     }
+
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
