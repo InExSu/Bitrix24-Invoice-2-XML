@@ -116,18 +116,17 @@ class Application
         $this->dealArrayAddCompanyName($arDeal);
 
         //            потом удали
-        $this->log($arDeal);
+//        $this->log($arDeal);
 
         return $arDeal["result"];
     }
 
     public function dealArrayAddCompanyName(&$arDeal): void
-    {
+    { // вернуть из сделки наименование компании покупателя
 
         $company_Id = $arDeal['result']['COMPANY_ID'];
 
         if ($company_Id !== '') {
-            // TODO
             $arCompany = CRest::call(
                 'crm.company.get',
                 [
@@ -142,31 +141,6 @@ class Application
         }
     }
 
-    public function log($variable): void
-    { // вывести в лог имя переменной и значение
-
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($variable, true));
-        $logger->write($this->variable_Name($variable));
-    } //Потребитель
-
-//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
-
-    public function variable_Name($variable): string
-    {
-        $backtrace = debug_backtrace()[0];
-        $file = file($backtrace['file']);
-        $callLine = $file[$backtrace['line']-1];
-
-        $result = preg_match('/' . __FUNCTION__ . ' *\([^$]*(?P<varName>\$[^ ,)]+) *\)/ui', $callLine, $matches);
-
-        if (!$result) {
-            throw new Exception('Fix regexp');
-        }
-
-        return $matches['varName'];
-    }
-
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
         if (empty($arDeal))
@@ -177,38 +151,36 @@ class Application
         $addressDost = $this->stringCutGeo($addressDost, "|");
 
         $arDealClean = [
-            "идСделки"           => $arDeal["ID"],
-            "грузоотправитель"   => $this->getRequisites((int)$arInvoice[CRMFields::SHIPPER]),
-            "номерДоговора"      => $arInvoice[CRMFields::CONTRACT] ?? "СИЗОД",   //$this->getListValue((int)$arDeal[CRMFields::CONTRACT], (int)CRMFields::CONTRACT_IBLOCK_ID),
-            "потребитель"        => $this->getRequisites((int)$arInvoice[CRMFields::CONSUMER]),
-            "грузополучатель"    => $this->getRequisites((int)$arInvoice[CRMFields::CONSIGNEE]),
+            "идСделки"                  => $arDeal["ID"],
+            "грузоотправитель"          => $this->getRequisites((int)$arInvoice[CRMFields::SHIPPER]),
+            "номерДоговора"             => $arInvoice[CRMFields::CONTRACT] ?? "СИЗОД",   //$this->getListValue((int)$arDeal[CRMFields::CONTRACT], (int)CRMFields::CONTRACT_IBLOCK_ID),
+            "потребитель"               => $this->getRequisites((int)$arInvoice[CRMFields::CONSUMER]),
+            "грузополучатель"           => $this->getRequisites((int)$arInvoice[CRMFields::CONSIGNEE]),
             // "адресДоставки" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
-            "адресДоставкиДляТК" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
-            "видДоставки"        => $arInvoice[CRMFields::DELIVERY_TYPE],
-            "контактноеЛицо"     => $this->getContactPhone((int)$arInvoice[CRMFields::DELIVERY_CONTACT]),
-            "плательщикДляТК"    => $this->getRequisites((int)$arInvoice[CRMFields::PAYER]),
-            "видДоговора"        => "с покупателем",
-            "типЦен"             => "отпускная (руб)",
-            "основнаяСтатья"     => "СИЗОД",
-            "подразделение"      => "Департамент СИЗОД и ФПП",
-            "cклад"              => "Склад ГП СИЗОД",
+            "адресДоставкиДляТК"        => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
+            "видДоставки"               => $arInvoice[CRMFields::DELIVERY_TYPE],
+            "контактноеЛицо"            => $this->getContactPhone((int)$arInvoice[CRMFields::DELIVERY_CONTACT]),
+            "плательщикДляТК"           => $this->getRequisites((int)$arInvoice[CRMFields::PAYER]),
+            "видДоговора"               => "с покупателем",
+            "типЦен"                    => "отпускная (руб)",
+            "основнаяСтатья"            => "СИЗОД",
+            "подразделение"             => "Департамент СИЗОД и ФПП",
+            "cклад"                     => "Склад ГП СИЗОД",
             // Добавил 2021-10-29
-            "условияОплаты"      => $arInvoice[CRMFields::TERMS_OF_PAYMENT],
-            "срокПоставки"       => $arInvoice[CRMFields::TIME_DELIVERY],
-            // ДОбавил 2022-03-09
-            "отгрузкаТранзитом"  => $arInvoice[CRMFields::SHIPMENT_TRANSIT],
+            "условияОплаты"             => $arInvoice[CRMFields::TERMS_OF_PAYMENT],
+            "срокПоставки"              => $arInvoice[CRMFields::TIME_DELIVERY],
+            // Добавил 2022-03-09
+            "отгрузкаТранзитом"         => $arInvoice[CRMFields::SHIPMENT_TRANSIT],
+            // Добавил 2022-20-23. Попов
+            "покупательКлиентКомпания]" => $arDeal['покупательКлиентКомпания'],
         ];
 
-        // потом удали
-//        $ar2sting = $arInvoice[CRMFields::DELIVERY_ADRESS];
-//        $logger->write(print_r('$arInvoice[CRMFields::DELIVERY_ADRESS]' . $ar2sting, true));
-
         return $arDealClean;
-    } //плательщик для ТК
+    } //Потребитель
 
-//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
+//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
 
-    public
+public
     function stringCutGeo($hayStack, string $needle)
     { //    адресу обрезать геокоординаты
 
@@ -216,9 +188,9 @@ class Application
             $hayStack = strtok($hayStack, $needle);
         }
         return $hayStack;
-    } // Адрес доставки для ТК
+    }
 
-    public
+        public
     function getRequisites(int $idCompnay): array
     {
         $arRequisites = [
@@ -291,7 +263,9 @@ class Application
             ];
         }
         return $arRequisites;
-    }
+    } //плательщик для ТК
+
+//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
     public
     function getContactPhone(int $idContact): array
@@ -326,9 +300,9 @@ class Application
             }
         }
         return $sContact;
-    } // договор поставки
+    } // Адрес доставки для ТК
 
-    protected
+protected
     function getDealProducts(int $idInvoice): array
     {
         $arCrmRequest = CRest::call(
@@ -374,7 +348,7 @@ class Application
 
 
         return $arCrmRequest["result"];
-    } // тип доставки
+    }
 
     protected
     function getProductProperties(): array
@@ -387,9 +361,7 @@ class Application
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    } // Контактное лицо грузополучателя
-
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+    } // договор поставки
 
     protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
@@ -450,9 +422,7 @@ class Application
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    } // инфоблок контрактов
-
-// Добавил 2021-10-29
+    } // тип доставки
 
     protected
     function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
@@ -506,17 +476,21 @@ class Application
 
         }
         return $arClearProducts;
-    } // Условия оплаты
+    } // Контактное лицо грузополучателя
 
-    protected
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+
+        protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
     {
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    }
+    } // инфоблок контрактов
 
-    public
+// Добавил 2021-10-29
+
+        public
     function arrayToXml(array $array, &$xml, $elementName = "")
     {
         foreach ($array as $key => $value) {
@@ -533,7 +507,7 @@ class Application
                 $xml->addChild("$key", "$value");
             }
         }
-    }
+    } // Условия оплаты
 
     protected function doFinalActions(int $idDeal): bool
     {
@@ -546,6 +520,29 @@ class Application
             return true;
         } else
             return false;
+    }
+
+public function log($variable): void
+    { // вывести в лог имя переменной и значение
+
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($variable, true));
+        $logger->write($this->variable_Name($variable));
+    }
+
+    public function variable_Name($variable): string
+    {
+        $backtrace = debug_backtrace()[0];
+        $file = file($backtrace['file']);
+        $callLine = $file[$backtrace['line'] - 1];
+
+        $result = preg_match('/' . __FUNCTION__ . ' *\([^$]*(?P<varName>\$[^ ,)]+) *\)/ui', $callLine, $matches);
+
+        if (!$result) {
+            throw new Exception('Fix regexp');
+        }
+
+        return $matches['varName'];
     }
 
 //    public function getListValue(int $elementId, int $iblockId)
