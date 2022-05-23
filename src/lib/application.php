@@ -6,9 +6,8 @@ class Application
 
     public function run(): bool
     {
-// потом включи
-//        $logger = new Logger ("log.txt");
-//        $logger->write(print_r($_REQUEST, true));
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($_REQUEST, true));
 
         $arRequest = $_REQUEST;
 
@@ -92,12 +91,6 @@ class Application
         if (empty($arDeal["result"]))
             throw new Exception("Не найдена сделка c id " . $idDeal);
 
-        // потом удали
-//        $logger = new Logger ("log.txt");
-//        $logger->write(print_r($arDeal, true));
-//        $logger->write('$arDeal' . PHP_EOL);
-//
-
         $arDealUserfields = CRest::call('crm.deal.userfield.list');
 
         if (!empty($arDealUserfields["result"])) {
@@ -114,9 +107,6 @@ class Application
         }
 
         $this->dealArrayAddCompanyName($arDeal);
-
-        //            потом удали
-//        $this->log($arDeal);
 
         return $arDeal["result"];
     }
@@ -135,9 +125,6 @@ class Application
             );
             $title = $arCompany['result']['TITLE'];
             $arDeal['result']['покупательКлиентКомпания'] = $title;
-//            потом удали
-//            $this->log($arDeal);
-//            $this->log($title);
         }
     }
 
@@ -249,9 +236,6 @@ public
                     }
                 }
             }
-// потом удали
-//            $logger = new Logger ("log.txt");
-//            $logger->write(print_r($arCrmRequest["result"], true));
 
             $arRequisites = [
                 // "компанияНаименование" => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] : "-",
