@@ -6,8 +6,9 @@ class Application
 
     public function run(): bool
     {
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($_REQUEST, true));
+//        потом включи
+//        $logger = new Logger ("log.txt");
+//        $logger->write(print_r($_REQUEST, true));
 
         $arRequest = $_REQUEST;
 
@@ -228,18 +229,20 @@ class Application
 
                     if ($arOneAdress["TYPE_ID"] == 6) // юр адрес
                     {
-                        $sAdress = implode($arCrmAdr, ", ");
+//                        $sAdress = implode($arCrmAdr, ", ");
+                        $sAdress = implode(", ", $arCrmAdr);
                     }
                     if ($arOneAdress["TYPE_ID"] == 11) //  адрес доставки
                     {
-                        $sDeliveryAdres = implode($arCrmAdr, ", ");
+//                        $sDeliveryAdres = implode($arCrmAdr, ", ");
+                        $sDeliveryAdres = implode(", ", $arCrmAdr);
                     }
                 }
             }
 
             // TODO потом удали
-            $this->log($sAdress);
-            $this->log($sDeliveryAdres);
+            $this->log($sAdress, '$sAdress $idCompnay: ' . $idCompnay);
+            $this->log($sDeliveryAdres, '$sDeliveryAdres компании: ' . $idCompnay);
 
             $arRequisites = [
                 "компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequest["result"][0]["NAME"],
@@ -254,28 +257,13 @@ class Application
 
 //    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
-    public function log($variable): void
+    public function log($variable, $comment): void
     { // вывести в лог имя переменной и значение
 
         $logger = new Logger ("log.txt");
         $logger->write(print_r($variable, true));
-        $logger->write($this->variable_Name($variable));
+        $logger->write($comment . PHP_EOL);
     } // Адрес доставки для ТК
-
-    public function variable_Name($variable): string
-    {
-        $backtrace = debug_backtrace()[0];
-        $file = file($backtrace['file']);
-        $callLine = $file[$backtrace['line'] - 1];
-
-        $result = preg_match('/' . __FUNCTION__ . ' *\([^$]*(?P<varName>\$[^ ,)]+) *\)/ui', $callLine, $matches);
-
-        if (!$result) {
-            throw new Exception('Fix regexp');
-        }
-
-        return $matches['varName'];
-    }
 
     public
     function getContactPhone(int $idContact): array
@@ -310,7 +298,7 @@ class Application
             }
         }
         return $sContact;
-    } // договор поставки
+    }
 
     protected
     function getDealProducts(int $idInvoice): array
@@ -358,7 +346,7 @@ class Application
 
 
         return $arCrmRequest["result"];
-    } // тип доставки
+    } // договор поставки
 
     protected
     function getProductProperties(): array
@@ -371,9 +359,7 @@ class Application
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    } // Контактное лицо грузополучателя
-
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+    } // тип доставки
 
     protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
@@ -434,9 +420,9 @@ class Application
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    } // инфоблок контрактов
+    } // Контактное лицо грузополучателя
 
-// Добавил 2021-10-29
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     protected
     function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
@@ -490,7 +476,9 @@ class Application
 
         }
         return $arClearProducts;
-    } // Условия оплаты
+    } // инфоблок контрактов
+
+// Добавил 2021-10-29
 
     protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
@@ -498,7 +486,7 @@ class Application
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    }
+    } // Условия оплаты
 
     public
     function arrayToXml(array $array, &$xml, $elementName = "")
@@ -530,6 +518,21 @@ class Application
             return true;
         } else
             return false;
+    }
+
+    public function variable_Name($variable): string
+    {
+        $backtrace = debug_backtrace()[0];
+        $file = file($backtrace['file']);
+        $callLine = $file[$backtrace['line'] - 1];
+
+        $result = preg_match('/' . __FUNCTION__ . ' *\([^$]*(?P<varName>\$[^ ,)]+) *\)/ui', $callLine, $matches);
+
+        if (!$result) {
+            throw new Exception('Fix regexp');
+        }
+
+        return $matches['varName'];
     }
 
 //    public function getListValue(int $elementId, int $iblockId)
