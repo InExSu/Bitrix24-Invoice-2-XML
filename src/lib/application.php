@@ -90,7 +90,7 @@ class Application
         $arDeal = CRest::call('crm.deal.get', ['id' => $idDeal]);
 
         if (empty($arDeal["result"]))
-            throw new Exception("Не найдена сделка в срм c id " . $idDeal);
+            throw new Exception("Не найдена сделка c id " . $idDeal);
 
         // потом удали
 //        $logger = new Logger ("log.txt");
@@ -121,27 +121,17 @@ class Application
     {
 
         $company_Id = $arDeal['result']['COMPANY_ID'];
-// TODO
-        $arCompany = CRest::call(
-            'crm.company.get',
-            [
-                'id' => $company_Id
-            ]
-        );
-        $this->log($arCompany);
-//        $this->log($company_Id);
-//
 
         if ($company_Id !== '') {
-// взять имя компании
-            $id = $arDeal['result']['ID'];
-// CRest::call('crm.deal.get', ['id' => $idDeal]);
-            $arCompany = CRest::call('crm.company.get', $id);
-            $title = $arCompany['TITLE'];
-//            $logger->write(print_r($arCompany, true));
-//            $logger->write(print_r($arCompany . PHP_EOL, true));
-//            $logger->write(print_r($title, true));
-//            $logger->write(print_r('$title' . PHP_EOL, true));
+            // TODO
+            $arCompany = CRest::call(
+                'crm.company.get',
+                [
+                    'id' => $company_Id
+                ]
+            );
+            $title = $arCompany['result']['TITLE'];
+            $this->log($title);
 //        }
         }
     }
