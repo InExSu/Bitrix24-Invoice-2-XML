@@ -5,9 +5,9 @@
  */
 class Logger
 {
-	private $iLogSize = 100;
-	private $arCache;
-	private $sFileName;
+	private int $iLogSize = 100;
+	private array $arCache;
+	private string $sFileName;
 
 	function __construct(string $sFileName)
 	{

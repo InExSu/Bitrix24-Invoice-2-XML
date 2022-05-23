@@ -117,13 +117,19 @@ class Application
         return $arDeal["result"];
     }
 
-    public function dealArrayAddCompanyName($arDeal)
+    public function dealArrayAddCompanyName($arDeal): void
     {
 
         $company_Id = $arDeal['result']['COMPANY_ID'];
 // TODO
-        $this->log($arDeal);
-        $this->log($company_Id);
+        $arCompany = CRest::call(
+            'crm.company.get',
+            [
+                'id' => $company_Id
+            ]
+        );
+        $this->log($arCompany);
+//        $this->log($company_Id);
 //
 
         if ($company_Id !== '') {
@@ -139,6 +145,35 @@ class Application
 //        }
         }
     }
+
+        public function log($variable): void
+    { // вывести в лог имя переменной и значение
+
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($variable, true));
+        $logger->write($this->variable_Name($variable));
+    } //Потребитель
+
+//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
+
+        public function variable_Name(): string
+    { // вернуть имя переменной
+
+        // читаем обратную трассировку
+        $bt = debug_backtrace();
+
+        // читаем файл
+        $file = file($bt[0]['file']);
+
+        // выбираем точную строку print_var_name($varname)
+        $src = $file[$bt[0]['line'] - 1];
+
+        // шаблон поиска
+        $pat = '#(.*)' . __FUNCTION__ . ' *?\( *?(.*) *?\)(.*)#i';
+
+        // извлечение $varname из совпадения №2
+        return preg_replace($pat, '$2', $src);
+    } //грузополучатель для ТК
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
@@ -177,9 +212,9 @@ class Application
 //        $logger->write(print_r('$arInvoice[CRMFields::DELIVERY_ADRESS]' . $ar2sting, true));
 
         return $arDealClean;
-    } //Потребитель
+    } //плательщик для ТК
 
-//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
+//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
     public
     function stringCutGeo($hayStack, string $needle)
@@ -189,9 +224,9 @@ class Application
             $hayStack = strtok($hayStack, $needle);
         }
         return $hayStack;
-    } //грузополучатель для ТК
+    } // Адрес доставки для ТК
 
-    public
+public
     function getRequisites(int $idCompnay): array
     {
         $arRequisites = [
@@ -264,9 +299,7 @@ class Application
             ];
         }
         return $arRequisites;
-    } //плательщик для ТК
-
-//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
+    }
 
     public
     function getContactPhone(int $idContact): array
@@ -301,9 +334,9 @@ class Application
             }
         }
         return $sContact;
-    } // Адрес доставки для ТК
+    } // договор поставки
 
-    protected
+        protected
     function getDealProducts(int $idInvoice): array
     {
         $arCrmRequest = CRest::call(
@@ -349,7 +382,7 @@ class Application
 
 
         return $arCrmRequest["result"];
-    }
+    } // тип доставки
 
     protected
     function getProductProperties(): array
@@ -362,7 +395,9 @@ class Application
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    } // договор поставки
+    } // Контактное лицо грузополучателя
+
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
@@ -423,7 +458,9 @@ class Application
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    } // тип доставки
+    } // инфоблок контрактов
+
+// Добавил 2021-10-29
 
     protected
     function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
@@ -477,21 +514,17 @@ class Application
 
         }
         return $arClearProducts;
-    } // Контактное лицо грузополучателя
+    } // Условия оплаты
 
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
-
-    protected
+protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
     {
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    } // инфоблок контрактов
+    }
 
-// Добавил 2021-10-29
-
-    public
+public
     function arrayToXml(array $array, &$xml, $elementName = "")
     {
         foreach ($array as $key => $value) {
@@ -508,7 +541,7 @@ class Application
                 $xml->addChild("$key", "$value");
             }
         }
-    } // Условия оплаты
+    }
 
     protected function doFinalActions(int $idDeal): bool
     {
@@ -523,49 +556,22 @@ class Application
             return false;
     }
 
-    public function getListValue(int $elementId, int $iblockId)
-    {
-        $arDealEnumFields = CRest::call(
-            'lists.element.get',
-            [
-                "FILTER"         =>
-                    [
-                        'ID' => $elementId
-                    ],
-                "IBLOCK_ID"      => $iblockId,
-                "IBLOCK_TYPE_ID" => "lists"
-            ]
-        );
-
-        return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
-    }
-
-    public function log($variable): void
-    { // вывести в лог имя переменной и значение
-
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($variable, true));
-        $logger->write($this->variable_Name($variable));
-    }
-
-    public function variable_Name(): string
-    { // вернуть имя переменной
-
-        // читаем обратную трассировку
-        $bt = debug_backtrace();
-
-        // читаем файл
-        $file = file($bt[0]['file']);
-
-        // выбираем точную строку print_var_name($varname)
-        $src = $file[$bt[0]['line'] - 1];
-
-        // шаблон поиска
-        $pat = '#(.*)' . __FUNCTION__ . ' *?\( *?(.*) *?\)(.*)#i';
-
-        // извлечение $varname из совпадения №2
-        return preg_replace($pat, '$2', $src);
-    }
+//    public function getListValue(int $elementId, int $iblockId)
+//    {
+//        $arDealEnumFields = CRest::call(
+//            'lists.element.get',
+//            [
+//                "FILTER"         =>
+//                    [
+//                        'ID' => $elementId
+//                    ],
+//                "IBLOCK_ID"      => $iblockId,
+//                "IBLOCK_TYPE_ID" => "lists"
+//            ]
+//        );
+//
+//        return !empty($arDealEnumFields["result"]) ? $arDealEnumFields["result"][0]["NAME"] : "-";
+//    }
 }
 
 class CRMFields
@@ -578,7 +584,7 @@ class CRMFields
     public const CONTRACT = "UF_CRM_1608889603";
     public const DELIVERY_TYPE = "UF_CRM_5F9BF01B5504B";
     public const DELIVERY_CONTACT = "UF_CRM_60D96D7707C69";
-    public const CONTRACT_IBLOCK_ID = 37;
+//    public const CONTRACT_IBLOCK_ID = 37;
     public const TERMS_OF_PAYMENT = 'UF_CRM_613AF9D4CF1D7';
     public const TIME_DELIVERY = 'UF_CRM_616D4E97213B7';
     public const SHIPMENT_TRANSIT = 'UF_CRM_6144A3A9DEE1D';
