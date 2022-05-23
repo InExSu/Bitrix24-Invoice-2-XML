@@ -131,12 +131,14 @@ class Application
                 ]
             );
             $title = $arCompany['result']['TITLE'];
+            $arDeal['result']['покупательКлиентКомпания'] = $title;
+//            потом удали
+            $this->log($arDeal);
             $this->log($title);
-//        }
         }
     }
 
-        public function log($variable): void
+    public function log($variable): void
     { // вывести в лог имя переменной и значение
 
         $logger = new Logger ("log.txt");
@@ -146,7 +148,7 @@ class Application
 
 //    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
 
-        public function variable_Name(): string
+    public function variable_Name(): string
     { // вернуть имя переменной
 
         // читаем обратную трассировку
@@ -216,7 +218,7 @@ class Application
         return $hayStack;
     } // Адрес доставки для ТК
 
-public
+    public
     function getRequisites(int $idCompnay): array
     {
         $arRequisites = [
@@ -326,7 +328,7 @@ public
         return $sContact;
     } // договор поставки
 
-        protected
+    protected
     function getDealProducts(int $idInvoice): array
     {
         $arCrmRequest = CRest::call(
@@ -506,7 +508,7 @@ public
         return $arClearProducts;
     } // Условия оплаты
 
-protected
+    protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
     {
         $node = $xml->addChild($sectionName);
@@ -514,7 +516,7 @@ protected
 
     }
 
-public
+    public
     function arrayToXml(array $array, &$xml, $elementName = "")
     {
         foreach ($array as $key => $value) {
