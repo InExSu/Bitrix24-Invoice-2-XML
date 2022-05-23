@@ -114,6 +114,10 @@ class Application
         }
 
         $this->dealArrayAddCompanyName($arDeal);
+
+        //            потом удали
+        $this->log($arDeal);
+
         return $arDeal["result"];
     }
 
@@ -133,8 +137,8 @@ class Application
             $title = $arCompany['result']['TITLE'];
             $arDeal['result']['покупательКлиентКомпания'] = $title;
 //            потом удали
-            $this->log($arDeal);
-            $this->log($title);
+//            $this->log($arDeal);
+//            $this->log($title);
         }
     }
 
