@@ -121,7 +121,7 @@ class Application
         return $arDeal["result"];
     }
 
-    public function dealArrayAddCompanyName($arDeal): void
+    public function dealArrayAddCompanyName(&$arDeal): void
     {
 
         $company_Id = $arDeal['result']['COMPANY_ID'];
@@ -152,24 +152,20 @@ class Application
 
 //    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
 
-    public function variable_Name(): string
-    { // вернуть имя переменной
+    public function variable_Name($variable): string
+    {
+        $backtrace = debug_backtrace()[0];
+        $file = file($backtrace['file']);
+        $callLine = $file[$backtrace['line']-1];
 
-        // читаем обратную трассировку
-        $bt = debug_backtrace();
+        $result = preg_match('/' . __FUNCTION__ . ' *\([^$]*(?P<varName>\$[^ ,)]+) *\)/ui', $callLine, $matches);
 
-        // читаем файл
-        $file = file($bt[0]['file']);
+        if (!$result) {
+            throw new Exception('Fix regexp');
+        }
 
-        // выбираем точную строку print_var_name($varname)
-        $src = $file[$bt[0]['line'] - 1];
-
-        // шаблон поиска
-        $pat = '#(.*)' . __FUNCTION__ . ' *?\( *?(.*) *?\)(.*)#i';
-
-        // извлечение $varname из совпадения №2
-        return preg_replace($pat, '$2', $src);
-    } //грузополучатель для ТК
+        return $matches['varName'];
+    }
 
     protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
