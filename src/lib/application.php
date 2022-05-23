@@ -243,7 +243,7 @@ class Application
             // TODO потом удали
 //            $this->log($sAdress, '$sAdress $idCompany: ' . $idCompany);
 //            $this->log($sDeliveryAdres, '$sDeliveryAdres компании: ' . $idCompany);
-            if ($idCompany !== 2295) {
+            if ($idCompany == 2295) {
                 $this->log($arCrmAdressRequest,'$arCrmAdressRequest $idCompany:' . $idCompany);
             }
             $arRequisites = [
