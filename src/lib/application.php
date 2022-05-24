@@ -253,11 +253,12 @@ class Application
 //            }
 
             $arRequisites = [
-                "компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequest["result"][0]["NAME"],
-                "компанияИНН"           => $arCrmRequest["result"][0]["RQ_INN"] ? $arCrmRequest["result"][0]["RQ_INN"] : "-",
-                "компанияЮрАдрес"       => $sAdress,
-                "компанияАдресДоставки" => $sDeliveryAdres,
-                "компанияКПП"           => $arCrmRequest["result"][0]["RQ_KPP"] ? $arCrmRequest["result"][0]["RQ_KPP"] : "-",
+//                "компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequest["result"][0]["NAME"],
+"компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ?: $arCrmRequest["result"][0]["NAME"],
+"компанияИНН"           => $arCrmRequest["result"][0]["RQ_INN"] ?: "-",
+"компанияЮрАдрес"       => $sAdress,
+"компанияАдресДоставки" => $sDeliveryAdres,
+"компанияКПП"           => $arCrmRequest["result"][0]["RQ_KPP"] ?: "-",
             ];
         }
         return $arRequisites;
