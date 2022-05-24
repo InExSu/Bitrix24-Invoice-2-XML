@@ -196,7 +196,7 @@ class Application
             return $arRequisites;
         }
 
-        $arCrmRequest = CRest::call(
+        $arCrmRequisiteList = CRest::call(
             'crm.requisite.list',
             [
                 "filter" => [
@@ -208,13 +208,13 @@ class Application
             ]
         );
 
-        if (!empty($arCrmRequest["result"])) {
+        if (!empty($arCrmRequisiteList["result"])) {
 
-            $arCrmAdressRequest = CRest::call(
+            $arCrmAddressList = CRest::call(
                 'crm.address.list',
                 [
                     "filter" => [
-                        "ENTITY_ID"      => $arCrmRequest["result"][0]["ID"],
+                        "ENTITY_ID"      => $arCrmRequisiteList["result"][0]["ID"],
                         "ENTITY_TYPE_ID" => 8,
                     ],
                 ]
@@ -222,8 +222,8 @@ class Application
 
             $sAdress = "";
             $sDeliveryAdres = '';
-            if (!empty($arCrmAdressRequest["result"])) {
-                foreach ($arCrmAdressRequest["result"] as $arOneAdress) {
+            if (!empty($arCrmAddressList["result"])) {
+                foreach ($arCrmAddressList["result"] as $arOneAdress) {
                     $arCrmAdr = [];
                     if ($arOneAdress["POSTAL_CODE"]) array_push($arCrmAdr, $arOneAdress["POSTAL_CODE"]);
                     if ($arOneAdress["COUNTRY"]) array_push($arCrmAdr, $arOneAdress["COUNTRY"]);
@@ -232,33 +232,37 @@ class Application
                     if ($arOneAdress["ADDRESS_1"]) array_push($arCrmAdr, $arOneAdress["ADDRESS_1"]);
                     if ($arOneAdress["ADDRESS_2"]) array_push($arCrmAdr, $arOneAdress["ADDRESS_2"]);
 
-                    if ($arOneAdress["TYPE_ID"] == 6) // юр адрес
-                    {
-//                        $sAdress = implode($arCrmAdr, ", ");
-                        $sAdress = implode(", ", $arCrmAdr);
-                    }
-                    if ($arOneAdress["TYPE_ID"] == 11) //  адрес доставки
-                    {
-//                        $sDeliveryAdres = implode($arCrmAdr, ", ");
-                        $sDeliveryAdres = implode(", ", $arCrmAdr);
-                    }
+//                    if ($arOneAdress["TYPE_ID"] == 6) // юр адрес
+//                    {
+//                        $sAdress = implode(", ", $arCrmAdr);
+//                    }
+//                    if ($arOneAdress["TYPE_ID"] == 11) //  адрес доставки
+//                    {
+//                        $sDeliveryAdres = implode(", ", $arCrmAdr);
+//                    }
+// Кузнецова, Инна Владимировна написала 19 мая 13:30:
+// <грузополучатель>
+// <компанияАдресДоставки/> необходимо забрать юр.адрес из реквизитов компании
+                    // Попов: делаю адреса одинаковыми
+                    $sAdress = implode(", ", $arCrmAdr);
+                    $sDeliveryAdres = $sAdress;
                 }
             }
 
             // TODO потом удали
-            $this->log($arCrmAdr, '$arCrmAdr $idCompany: ' . $idCompany);
+//            $this->log($arCrmAdr, '$arCrmAdr $idCompany: ' . $idCompany);
 //            $this->log($sDeliveryAdres, '$sDeliveryAdres компании: ' . $idCompany);
 //            if ($idCompany == 2295) {
-//                $this->log($arCrmAdressRequest["result"], '$arCrmAdressRequest["result"] $idCompany:' . $idCompany);
+//                $this->log($arCrmAddressList["result"], '$arCrmAddressList["result"] $idCompany:' . $idCompany);
 //            }
 
             $arRequisites = [
-//                "компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequest["result"][0]["NAME"],
-"компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ?: $arCrmRequest["result"][0]["NAME"],
-"компанияИНН"           => $arCrmRequest["result"][0]["RQ_INN"] ?: "-",
+//                "компанияНаименование"  => $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequisiteList["result"][0]["NAME"],
+"компанияНаименование"  => $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] ?: $arCrmRequisiteList["result"][0]["NAME"],
+"компанияИНН"           => $arCrmRequisiteList["result"][0]["RQ_INN"] ?: "-",
 "компанияЮрАдрес"       => $sAdress,
 "компанияАдресДоставки" => $sDeliveryAdres,
-"компанияКПП"           => $arCrmRequest["result"][0]["RQ_KPP"] ?: "-",
+"компанияКПП"           => $arCrmRequisiteList["result"][0]["RQ_KPP"] ?: "-",
             ];
         }
         return $arRequisites;
