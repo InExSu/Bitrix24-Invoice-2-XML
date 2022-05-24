@@ -6,9 +6,12 @@ class Application
 
     public function run(): bool
     {
-//        потом включи
-//        $logger = new Logger ("log.txt");
-//        $logger->write(print_r($_REQUEST, true));
+        $logger = new Logger ("log.txt");
+        // потом включи
+        // $logger->write(print_r($_REQUEST, true));
+
+        // Потом отключи
+        $logger->clean();
 
         $arRequest = $_REQUEST;
 
@@ -188,8 +191,10 @@ class Application
             "компанияАдресДоставки" => "-",
             "компанияКПП"           => "-",
         ];
-        if ($idCompany <= 0)
+
+        if ($idCompany <= 0) {
             return $arRequisites;
+        }
 
         $arCrmRequest = CRest::call(
             'crm.requisite.list',
@@ -241,11 +246,12 @@ class Application
             }
 
             // TODO потом удали
-//            $this->log($sAdress, '$sAdress $idCompany: ' . $idCompany);
+            $this->log($arCrmAdr, '$arCrmAdr $idCompany: ' . $idCompany);
 //            $this->log($sDeliveryAdres, '$sDeliveryAdres компании: ' . $idCompany);
-            if ($idCompany == 2295) {
-                $this->log($arCrmAdressRequest,'$arCrmAdressRequest $idCompany:' . $idCompany);
-            }
+//            if ($idCompany == 2295) {
+//                $this->log($arCrmAdressRequest["result"], '$arCrmAdressRequest["result"] $idCompany:' . $idCompany);
+//            }
+
             $arRequisites = [
                 "компанияНаименование"  => $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequest["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequest["result"][0]["NAME"],
                 "компанияИНН"           => $arCrmRequest["result"][0]["RQ_INN"] ? $arCrmRequest["result"][0]["RQ_INN"] : "-",
@@ -259,7 +265,15 @@ class Application
 
 //    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
-        public
+    public function log($variable, $comment): void
+    { // вывести в лог имя переменной и значение
+
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($variable, true));
+        $logger->write($comment . PHP_EOL);
+    } // Адрес доставки для ТК
+
+    public
     function getContactPhone(int $idContact): array
     {
         $sContact = [
@@ -292,9 +306,9 @@ class Application
             }
         }
         return $sContact;
-    } // Адрес доставки для ТК
+    }
 
-protected
+    protected
     function getDealProducts(int $idInvoice): array
     {
         $arCrmRequest = CRest::call(
@@ -340,7 +354,7 @@ protected
 
 
         return $arCrmRequest["result"];
-    }
+    } // договор поставки
 
     protected
     function getProductProperties(): array
@@ -353,7 +367,7 @@ protected
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    } // договор поставки
+    } // тип доставки
 
     protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
@@ -414,7 +428,9 @@ protected
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    } // тип доставки
+    } // Контактное лицо грузополучателя
+
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     protected
     function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
@@ -468,9 +484,9 @@ protected
 
         }
         return $arClearProducts;
-    } // Контактное лицо грузополучателя
+    } // инфоблок контрактов
 
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+// Добавил 2021-10-29
 
     protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
@@ -478,11 +494,9 @@ protected
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    } // инфоблок контрактов
+    } // Условия оплаты
 
-// Добавил 2021-10-29
-
-        public
+    public
     function arrayToXml(array $array, &$xml, $elementName = "")
     {
         foreach ($array as $key => $value) {
@@ -499,7 +513,7 @@ protected
                 $xml->addChild("$key", "$value");
             }
         }
-    } // Условия оплаты
+    }
 
     protected function doFinalActions(int $idDeal): bool
     {
@@ -512,14 +526,6 @@ protected
             return true;
         } else
             return false;
-    }
-
-public function log($variable, $comment): void
-    { // вывести в лог имя переменной и значение
-
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($variable, true));
-        $logger->write($comment . PHP_EOL);
     }
 
     public function variable_Name($variable): string
