@@ -142,32 +142,36 @@ class Application
         $addressDost = $this->stringCutGeo($addressDost, "|");
 
         // TODO потом удали
-        $this->log($arDeal, '$arDeal["ID"]' . $arDeal["ID"]);
+// $this->log($arDeal, '$arDeal["ID"]' . $arDeal["ID"]);
 
         $arDealClean = [
-            "идСделки"                 => $arDeal["ID"],
-            "грузоотправитель"         => $this->getRequisites((int)$arInvoice[CRMFields::SHIPPER]),
-            "номерДоговора"            => $arInvoice[CRMFields::CONTRACT] ?? "СИЗОД",   //$this->getListValue((int)$arDeal[CRMFields::CONTRACT], (int)CRMFields::CONTRACT_IBLOCK_ID),
+            "идСделки"           => $arDeal["ID"],
+            "грузоотправитель"   => $this->getRequisites((int)$arInvoice[CRMFields::SHIPPER]),
+            "номерДоговора"      => $arInvoice[CRMFields::CONTRACT] ?? "СИЗОД",   //$this->getListValue((int)$arDeal[CRMFields::CONTRACT], (int)CRMFields::CONTRACT_IBLOCK_ID),
             // "потребитель" => $this->getRequisites((int)$arInvoice[CRMFields::CONSUMER]),
-            "потребитель"              => $this->getRequisites((int)$arDeal["ID"]),
-            "грузополучатель"          => $this->getRequisites((int)$arInvoice[CRMFields::CONSIGNEE]),
+            "потребитель"        => $this->getRequisites((int)$arDeal["COMPANY_ID"]),
+            "грузополучатель"    => $this->getRequisites((int)$arInvoice[CRMFields::CONSIGNEE]),
             // "адресДоставки" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
-            "адресДоставкиДляТК"       => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
-            "видДоставки"              => $arInvoice[CRMFields::DELIVERY_TYPE],
-            "контактноеЛицо"           => $this->getContactPhone((int)$arInvoice[CRMFields::DELIVERY_CONTACT]),
-            "плательщикДляТК"          => $this->getRequisites((int)$arInvoice[CRMFields::PAYER]),
-            "видДоговора"              => "с покупателем",
-            "типЦен"                   => "отпускная (руб)",
-            "основнаяСтатья"           => "СИЗОД",
-            "подразделение"            => "Департамент СИЗОД и ФПП",
-            "cклад"                    => "Склад ГП СИЗОД",
-            // Добавил 2021-10-29
-            "условияОплаты"            => $arInvoice[CRMFields::TERMS_OF_PAYMENT],
-            "срокПоставки"             => $arInvoice[CRMFields::TIME_DELIVERY],
+            "адресДоставкиДляТК" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
+            "видДоставки"        => $arInvoice[CRMFields::DELIVERY_TYPE],
+            // "контактноеЛицо"           => $this->getContactPhone((int)$arInvoice[CRMFields::DELIVERY_CONTACT]),
+            // Кузнецова, Инна Владимировна 2022-05-26 14:06
+            // В тег КонтактноеЛицо взять информацию из поля "Контактное лицо грузополучателя" (строка) из сделки
+            "контактноеЛицо"     => $arDeal["UF_CRM_1650885619"],
+            "плательщикДляТК"    => $this->getRequisites((int)$arInvoice[CRMFields::PAYER]),
+            // Кузнецова отключить 2022-02-26
+            //            "видДоговора"        => "с покупателем",
+            //            "типЦен"             => "отпускная (руб)",
+            //            "основнаяСтатья"     => "СИЗОД",
+            //            "подразделение"      => "Департамент СИЗОД и ФПП",
+            //            "cклад"              => "Склад ГП СИЗОД",
+            //            // Добавил 2021-10-29
+            //            "условияОплаты"      => $arInvoice[CRMFields::TERMS_OF_PAYMENT],
+            //            "срокПоставки"       => $arInvoice[CRMFields::TIME_DELIVERY],
             // Добавил 2022-03-09
-            "отгрузкаТранзитом"        => $arInvoice[CRMFields::SHIPMENT_TRANSIT],
-            // Добавил 2022-20-23. Попов
-            "покупательКлиентКомпания" => $arDeal['покупательКлиентКомпания'],
+            "отгрузкаТранзитом"  => $arInvoice[CRMFields::SHIPMENT_TRANSIT],
+            // Добавил 2022-20-23. Попов, отключил 2022-20-26
+            //            "покупательКлиентКомпания" => $arDeal['покупательКлиентКомпания'],
         ];
 
         return $arDealClean;
@@ -184,16 +188,6 @@ class Application
         }
         return $hayStack;
     }
-
-    public function log($variable, $comment): void
-    { // вывести в лог имя переменной и значение
-
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($variable, true));
-        $logger->write($comment . PHP_EOL);
-    } //плательщик для ТК
-
-//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
     public
     function getRequisites(int $idCompany): array
@@ -263,13 +257,6 @@ class Application
                 }
             }
 
-            // TODO потом удали
-//            $this->log($arCrmAdr, '$arCrmAdr $idCompany: ' . $idCompany);
-//            $this->log($sDeliveryAdres, '$sDeliveryAdres компании: ' . $idCompany);
-//            if ($idCompany == 2295) {
-//                $this->log($arCrmAddressList["result"], '$arCrmAddressList["result"] $idCompany:' . $idCompany);
-//            }
-
             $arRequisites = [
 //                "компанияНаименование"  => $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequisiteList["result"][0]["NAME"],
 "компанияНаименование"  => $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] ?: $arCrmRequisiteList["result"][0]["NAME"],
@@ -280,42 +267,9 @@ class Application
             ];
         }
         return $arRequisites;
-    } // Адрес доставки для ТК
+    } //плательщик для ТК
 
-    public
-    function getContactPhone(int $idContact): array
-    {
-        $sContact = [
-            "фамилия"  => "",
-            "имя"      => "",
-            "отчество" => "",
-            "телефон"  => "",
-            "email"    => ""
-        ];
-//        $sPhone = "";
-        if ($idContact > 0) {
-            $arContactFields = CRest::call(
-                'crm.contact.get',
-                [
-                    "id" => $idContact
-                ]
-            );
-
-            if (!empty($arContactFields["result"])) {
-                if (!empty($arContactFields["result"]["PHONE"]))
-//                    $sPhone = $arContactFields["result"]["PHONE"][0]["VALUE"];
-
-                    $sContact = [
-                        "фамилия"  => $arContactFields["result"]["LAST_NAME"] ?? "",
-                        "имя"      => $arContactFields["result"]["NAME"] ?? "",
-                        "отчество" => $arContactFields["result"]["SECOND_NAME"] ?? "",
-                        "телефон"  => $arContactFields["result"]["PHONE"][0]["VALUE"] ?? "",
-                        "email"    => $arContactFields["result"]["EMAIL"][0]["VALUE"] ?? "",
-                    ];
-            }
-        }
-        return $sContact;
-    }
+//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
     protected
     function getDealProducts(int $idInvoice): array
@@ -363,7 +317,7 @@ class Application
 
 
         return $arCrmRequest["result"];
-    } // договор поставки
+    } // Адрес доставки для ТК
 
     protected
     function getProductProperties(): array
@@ -376,7 +330,7 @@ class Application
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    } // тип доставки
+    }
 
     protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
@@ -437,9 +391,7 @@ class Application
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    } // Контактное лицо грузополучателя
-
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+    } // договор поставки
 
     protected
     function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
@@ -493,9 +445,7 @@ class Application
 
         }
         return $arClearProducts;
-    } // инфоблок контрактов
-
-// Добавил 2021-10-29
+    } // тип доставки
 
     protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
@@ -503,7 +453,9 @@ class Application
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    } // Условия оплаты
+    } // Контактное лицо грузополучателя
+
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     public function arrayToXml(array $array, &$xml, $elementName = "")
     {
@@ -526,7 +478,9 @@ class Application
                 $xml->addChild("$key", "$value");
             }
         }
-    }
+    } // инфоблок контрактов
+
+// Добавил 2021-10-29
 
     protected function doFinalActions(int $idDeal): bool
     {
@@ -539,6 +493,49 @@ class Application
             return true;
         } else
             return false;
+    } // Условия оплаты
+
+    public function log($variable, $comment): void
+    { // вывести в лог имя переменной и значение
+
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($variable, true));
+        $logger->write($comment . PHP_EOL);
+    }
+
+    public
+    function getContactPhone(int $idContact): array
+    {
+        $sContact = [
+            "фамилия"  => "",
+            "имя"      => "",
+            "отчество" => "",
+            "телефон"  => "",
+            "email"    => ""
+        ];
+//        $sPhone = "";
+        if ($idContact > 0) {
+            $arContactFields = CRest::call(
+                'crm.contact.get',
+                [
+                    "id" => $idContact
+                ]
+            );
+
+            if (!empty($arContactFields["result"])) {
+                if (!empty($arContactFields["result"]["PHONE"]))
+//                    $sPhone = $arContactFields["result"]["PHONE"][0]["VALUE"];
+
+                    $sContact = [
+                        "фамилия"  => $arContactFields["result"]["LAST_NAME"] ?? "",
+                        "имя"      => $arContactFields["result"]["NAME"] ?? "",
+                        "отчество" => $arContactFields["result"]["SECOND_NAME"] ?? "",
+                        "телефон"  => $arContactFields["result"]["PHONE"][0]["VALUE"] ?? "",
+                        "email"    => $arContactFields["result"]["EMAIL"][0]["VALUE"] ?? "",
+                    ];
+            }
+        }
+        return $sContact;
     }
 
 //    public function getListValue(int $elementId, int $iblockId)
