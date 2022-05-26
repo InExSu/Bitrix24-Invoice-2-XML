@@ -141,11 +141,15 @@ class Application
         $addressDost = $arInvoice[CRMFields::DELIVERY_ADRESS];
         $addressDost = $this->stringCutGeo($addressDost, "|");
 
+        // TODO потом удали
+        $this->log($arDeal, '$arDeal["ID"]' . $arDeal["ID"]);
+
         $arDealClean = [
             "идСделки"                 => $arDeal["ID"],
             "грузоотправитель"         => $this->getRequisites((int)$arInvoice[CRMFields::SHIPPER]),
             "номерДоговора"            => $arInvoice[CRMFields::CONTRACT] ?? "СИЗОД",   //$this->getListValue((int)$arDeal[CRMFields::CONTRACT], (int)CRMFields::CONTRACT_IBLOCK_ID),
-            "потребитель"              => $this->getRequisites((int)$arInvoice[CRMFields::CONSUMER]),
+            // "потребитель" => $this->getRequisites((int)$arInvoice[CRMFields::CONSUMER]),
+            "потребитель"              => $this->getRequisites((int)$arDeal["ID"]),
             "грузополучатель"          => $this->getRequisites((int)$arInvoice[CRMFields::CONSIGNEE]),
             // "адресДоставки" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
             "адресДоставкиДляТК"       => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
@@ -180,6 +184,16 @@ class Application
         }
         return $hayStack;
     }
+
+    public function log($variable, $comment): void
+    { // вывести в лог имя переменной и значение
+
+        $logger = new Logger ("log.txt");
+        $logger->write(print_r($variable, true));
+        $logger->write($comment . PHP_EOL);
+    } //плательщик для ТК
+
+//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
 
     public
     function getRequisites(int $idCompany): array
@@ -266,16 +280,6 @@ class Application
             ];
         }
         return $arRequisites;
-    } //плательщик для ТК
-
-//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
-
-    public function log($variable, $comment): void
-    { // вывести в лог имя переменной и значение
-
-        $logger = new Logger ("log.txt");
-        $logger->write(print_r($variable, true));
-        $logger->write($comment . PHP_EOL);
     } // Адрес доставки для ТК
 
     public
@@ -288,7 +292,7 @@ class Application
             "телефон"  => "",
             "email"    => ""
         ];
-        $sPhone = "";
+//        $sPhone = "";
         if ($idContact > 0) {
             $arContactFields = CRest::call(
                 'crm.contact.get',
@@ -299,15 +303,15 @@ class Application
 
             if (!empty($arContactFields["result"])) {
                 if (!empty($arContactFields["result"]["PHONE"]))
-                    $sPhone = $arContactFields["result"]["PHONE"][0]["VALUE"];
+//                    $sPhone = $arContactFields["result"]["PHONE"][0]["VALUE"];
 
-                $sContact = [
-                    "фамилия"  => $arContactFields["result"]["LAST_NAME"] ?? "",
-                    "имя"      => $arContactFields["result"]["NAME"] ?? "",
-                    "отчество" => $arContactFields["result"]["SECOND_NAME"] ?? "",
-                    "телефон"  => $arContactFields["result"]["PHONE"][0]["VALUE"] ?? "",
-                    "email"    => $arContactFields["result"]["EMAIL"][0]["VALUE"] ?? "",
-                ];
+                    $sContact = [
+                        "фамилия"  => $arContactFields["result"]["LAST_NAME"] ?? "",
+                        "имя"      => $arContactFields["result"]["NAME"] ?? "",
+                        "отчество" => $arContactFields["result"]["SECOND_NAME"] ?? "",
+                        "телефон"  => $arContactFields["result"]["PHONE"][0]["VALUE"] ?? "",
+                        "email"    => $arContactFields["result"]["EMAIL"][0]["VALUE"] ?? "",
+                    ];
             }
         }
         return $sContact;
@@ -336,7 +340,7 @@ class Application
 
         if (!empty($arCrmRequest["result"])) {
             $arProductIds = [];
-            $arCatalogProducts = [];
+//            $arCatalogProducts = [];
 
             foreach ($arCrmRequest["result"] as $arProduct) {
 
@@ -457,14 +461,14 @@ class Application
                 $dPriceWithoutTax = $dFinalPrice / (1 + $arSortedItems[$arOneProduct["ID"]]["VAT_RATE"]);
                 $dTaxSize = $arSortedItems[$arOneProduct["ID"]]["PRICE"] - $dPriceWithoutTax;
 
-                $dPriceWithoutTaxAndWithoutDiscount = ($dPriceWithoutTax + $arOneProduct["DISCOUNT_SUM"]) / 9 * 10;
+//                $dPriceWithoutTaxAndWithoutDiscount = ($dPriceWithoutTax + $arOneProduct["DISCOUNT_SUM"]) / 9 * 10;
 
             } else {
                 $dFinalPrice = $arSortedItems[$arOneProduct["ID"]]["PRICE"];
-                $dPriceWithoutTax = $dFinalPrice / (1 + $arSortedItems[$arOneProduct["ID"]]["VAT_RATE"]);
+//                $dPriceWithoutTax = $dFinalPrice / (1 + $arSortedItems[$arOneProduct["ID"]]["VAT_RATE"]);
                 $dTaxSize = $dFinalPrice * $arSortedItems[$arOneProduct["ID"]]["VAT_RATE"];
 
-                $dPriceWithoutTaxAndWithoutDiscount = $dPriceWithoutTax + $arOneProduct["DISCOUNT_SUM"];
+//                $dPriceWithoutTaxAndWithoutDiscount = $dPriceWithoutTax + $arOneProduct["DISCOUNT_SUM"];
 
             }
 
@@ -475,7 +479,7 @@ class Application
                 "наименование"   => $arOneProduct['PRODUCT_NAME'], //
                 "количество"     => $arOneProduct['QUANTITY'], //
                 "производитель"  => implode($arOneProduct['PROPS']['PROPERTY_485']["VALUE"], ";"),
-                "код"            => ($arOneProduct['PROPS']['PROPERTY_539']["VALUE"] ? $arOneProduct['PROPS']['PROPERTY_539']["VALUE"] : ""),  //$arOneProduct['PRODUCT_ID'],
+                "код"            => ($arOneProduct['PROPS']['PROPERTY_539']["VALUE"] ?: ""),  //$arOneProduct['PRODUCT_ID'],
                 "цена"           => ($bVatIncluded) ? $priceExclusiveWithDiscount + $arOneProduct['DISCOUNT_SUM'] * 1.2 : $priceExclusiveWithDiscount + $arOneProduct['DISCOUNT_SUM'],
                 "суммаБезСкидки" => ($priceExclusiveWithDiscount + $arOneProduct['DISCOUNT_SUM']) * $arOneProduct['QUANTITY'],
                 "суммаСкидки"    => $arOneProduct['DISCOUNT_SUM'] * $arOneProduct['QUANTITY'],
@@ -501,8 +505,7 @@ class Application
 
     } // Условия оплаты
 
-    public
-    function arrayToXml(array $array, &$xml, $elementName = "")
+    public function arrayToXml(array $array, &$xml, $elementName = "")
     {
         foreach ($array as $key => $value) {
             if (is_array($value)) {
@@ -510,9 +513,14 @@ class Application
                     $subnode = $xml->addChild("$key");
                     $this->arrayToXml($value, $subnode);
                 } else {
-                    if ($elementName != "")
+// Попов: переделал 2022-05-25
+//                    if ($elementName != "")
+//                        $subnode = $xml->addChild("$elementName");
+//                    $this->arrayToXml($value, $subnode);
+                    if ($elementName != "") {
                         $subnode = $xml->addChild("$elementName");
-                    $this->arrayToXml($value, $subnode);
+                        $this->arrayToXml($value, $subnode);
+                    }
                 }
             } else {
                 $xml->addChild("$key", "$value");
@@ -531,21 +539,6 @@ class Application
             return true;
         } else
             return false;
-    }
-
-    public function variable_Name($variable): string
-    {
-        $backtrace = debug_backtrace()[0];
-        $file = file($backtrace['file']);
-        $callLine = $file[$backtrace['line'] - 1];
-
-        $result = preg_match('/' . __FUNCTION__ . ' *\([^$]*(?P<varName>\$[^ ,)]+) *\)/ui', $callLine, $matches);
-
-        if (!$result) {
-            throw new Exception('Fix regexp');
-        }
-
-        return $matches['varName'];
     }
 
 //    public function getListValue(int $elementId, int $iblockId)
