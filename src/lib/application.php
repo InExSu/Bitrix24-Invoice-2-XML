@@ -111,6 +111,10 @@ class Application
         }
 
         $this->dealArrayAddCompanyName($arDeal);
+        $this->dealArrayAddCompanyPhone($arDeal);
+
+        // TODO потом удали
+        file_put_contents('arDeal[result]', print_r($arDeal["result"], true));
 
         return $arDeal["result"];
     }
@@ -132,7 +136,30 @@ class Application
         }
     }
 
-protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
+    public function dealArrayAddCompanyPhone(&$arDeal): void
+    { // вернуть из сделки наименование компании покупателя
+
+        $company_Id = $arDeal['result']['COMPANY_ID'];
+
+        if ($company_Id !== '') {
+            $arCompany = CRest::call(
+                'crm.company.get',
+                [
+                    'id' => $company_Id
+                ]
+            );
+
+            // TODO потом удали
+            file_put_contents('arCompany', print_r($arCompany, true));
+
+            if ($arCompany) {
+                $phone = $arCompany['result']['PHONE'][0]['VALUE'];
+                $arDeal['result']['компанияТелефон'] = $phone;
+            }
+        }
+    }
+
+    protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
         if (empty($arDeal))
             return [];
@@ -170,14 +197,12 @@ protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []):
             "отгрузкаТранзитом"  => $arInvoice[CRMFields::SHIPMENT_TRANSIT],
             // Добавил 2022-20-23. Попов, отключил 2022-20-26
             //            "покупательКлиентКомпания" => $arDeal['покупательКлиентКомпания'],
-            // Добавил 2022-06-30 Тихомирова
-            "комментарий"        => $arDeal['COMMENTS']
         ];
 
         return $arDealClean;
     }
 
-        public function stringCutGeo($hayStack, string $needle)
+    public function stringCutGeo($hayStack, string $needle)
     { //  адресу обрезать геокоординаты
 
         if (strpos($hayStack, $needle) !== false) {
@@ -188,7 +213,7 @@ protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []):
 
 //    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
 
-public function getRequisites(int $idCompany): array
+    public function getRequisites(int $idCompany): array
     {
         $arRequisites = [
             "компанияНаименование"  => "-",
@@ -196,6 +221,7 @@ public function getRequisites(int $idCompany): array
             "компанияЮрАдрес"       => "-",
             "компанияАдресДоставки" => "-",
             "компанияКПП"           => "-",
+            "компанияТелефон"       => "-",
         ];
 
         if ($idCompany <= 0) {
@@ -228,6 +254,7 @@ public function getRequisites(int $idCompany): array
 
             $sAddress = "";
             $sDeliveryAdres = '';
+
             if (!empty($arCrmAddressList["result"])) {
                 foreach ($arCrmAddressList["result"] as $arOneAddress) {
                     $arCrmAdr = [];
@@ -262,10 +289,36 @@ public function getRequisites(int $idCompany): array
 "компанияЮрАдрес"       => $sAddress,
 "компанияАдресДоставки" => $sDeliveryAdres,
 "компанияКПП"           => $arCrmRequisiteList["result"][0]["RQ_KPP"] ?: "-",
+"компанияТелефон"       => $this->companyPhone($idCompany, 0),
             ];
         }
         return $arRequisites;
     }
+
+        public function companyPhone($company_Id, $index = 0): string
+    { // вернуть номер телефона
+
+        $phone = '-';
+
+        if ($company_Id !== '') {
+            $arCompany = CRest::call(
+                'crm.company.get',
+                [
+                    'id' => $company_Id
+                ]
+            );
+
+            // TODO потом удали
+            file_put_contents('arCompany', print_r($arCompany, true));
+
+            if ($arCompany) {
+                $phone = $arCompany['result']['PHONE'][$index]['VALUE'];
+            }
+        }
+        return $phone;
+    } //плательщик для ТК
+
+//    public const DELIVERY_Address = "UF_CRM_1610367809"; // адрес доставки
 
     protected
     function getDealProducts(int $idInvoice): array
@@ -313,11 +366,9 @@ public function getRequisites(int $idCompany): array
 
 
         return $arCrmRequest["result"];
-    } //плательщик для ТК
+    } // Адрес доставки для ТК
 
-//    public const DELIVERY_Address = "UF_CRM_1610367809"; // адрес доставки
-
-        protected
+protected
     function getProductProperties(): array
     {
         $arProperties = [];
@@ -328,9 +379,9 @@ public function getRequisites(int $idCompany): array
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    } // Адрес доставки для ТК
+    }
 
-protected
+        protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
     {
         $arProducts = [];
@@ -389,7 +440,7 @@ protected
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    }
+    } // договор поставки
 
     protected function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
     {
@@ -442,7 +493,7 @@ protected
 
         }
         return $arClearProducts;
-    } // договор поставки
+    } // тип доставки
 
     protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
@@ -450,7 +501,9 @@ protected
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    } // тип доставки
+    } // Контактное лицо грузополучателя
+
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     public function arrayToXml(array $array, &$xml, $elementName = "")
     {
@@ -473,11 +526,11 @@ protected
                 $xml->addChild("$key", "$value");
             }
         }
-    } // Контактное лицо грузополучателя
+    } // инфоблок контрактов
 
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+// Добавил 2021-10-29
 
-    protected function doFinalActions(int $idDeal): bool
+protected function doFinalActions(int $idDeal): bool
     {
         file_put_contents("files/$idDeal.xml", $this->xml->asXML());
 
@@ -488,26 +541,7 @@ protected
             return true;
         } else
             return false;
-    } // инфоблок контрактов
-
-// Добавил 2021-10-29
-
-        public function dealArrayAddCompanyPhone(&$arDeal): void
-    { // вернуть из сделки наименование компании покупателя
-
-        $company_Id = $arDeal['result']['COMPANY_ID'];
-
-        if ($company_Id !== '') {
-            $arCompany = CRest::call(
-                'crm.company.get',
-                [
-                    'id' => $company_Id
-                ]
-            );
-            $title = $arCompany['result']['TITLE'];
-            $arDeal['result']['покупательКлиентКомпания'] = $title;
-        }
-    } // Условия оплаты
+    }
 
     public function log($variable, $comment): void
     { // вывести в лог имя переменной и значение
@@ -537,9 +571,9 @@ protected
             );
 
             if (!empty($arContactFields["result"])) {
-                if (!empty($arContactFields["result"]["PHONE"]))
-//                    $sPhone = $arContactFields["result"]["PHONE"][0]["VALUE"];
+                if (!empty($arContactFields["result"]["PHONE"])) //                    $sPhone = $arContactFields["result"]["PHONE"][0]["VALUE"];
 
+                {
                     $sContact = [
                         "фамилия"  => $arContactFields["result"]["LAST_NAME"] ?? "",
                         "имя"      => $arContactFields["result"]["NAME"] ?? "",
@@ -547,6 +581,7 @@ protected
                         "телефон"  => $arContactFields["result"]["PHONE"][0]["VALUE"] ?? "",
                         "email"    => $arContactFields["result"]["EMAIL"][0]["VALUE"] ?? "",
                     ];
+                }
             }
         }
         return $sContact;
