@@ -132,27 +132,25 @@ class Application
         }
     }
 
-    protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
+protected function prepareDealForXml(array $arDeal = [], array $arInvoice = []): array
     {
         if (empty($arDeal))
             return [];
 
-        // 2022-05-17 отсечь из геокоординаты из
-        $addressDost = $arInvoice[CRMFields::DELIVERY_ADRESS];
+        // 2022-05-17 отсечь геокоординаты из
+        $addressDost = $arInvoice[CRMFields::DELIVERY_Address];
         $addressDost = $this->stringCutGeo($addressDost, "|");
-
-        // TODO потом удали
-// $this->log($arDeal, '$arDeal["ID"]' . $arDeal["ID"]);
 
         $arDealClean = [
             "идСделки"           => $arDeal["ID"],
+            "комментарий"        => $arDeal["COMMENTS"],
             "грузоотправитель"   => $this->getRequisites((int)$arInvoice[CRMFields::SHIPPER]),
             "номерДоговора"      => $arInvoice[CRMFields::CONTRACT] ?? "СИЗОД",   //$this->getListValue((int)$arDeal[CRMFields::CONTRACT], (int)CRMFields::CONTRACT_IBLOCK_ID),
             // "потребитель" => $this->getRequisites((int)$arInvoice[CRMFields::CONSUMER]),
             "потребитель"        => $this->getRequisites((int)$arDeal["COMPANY_ID"]),
             "грузополучатель"    => $this->getRequisites((int)$arInvoice[CRMFields::CONSIGNEE]),
-            // "адресДоставки" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
-            "адресДоставкиДляТК" => $addressDost, // $arInvoice[CRMFields::DELIVERY_ADRESS],
+            // "адресДоставки" => $addressDost, // $arInvoice[CRMFields::DELIVERY_Address],
+            "адресДоставкиДляТК" => $addressDost, // $arInvoice[CRMFields::DELIVERY_Address],
             "видДоставки"        => $arInvoice[CRMFields::DELIVERY_TYPE],
             // "контактноеЛицо"           => $this->getContactPhone((int)$arInvoice[CRMFields::DELIVERY_CONTACT]),
             // Кузнецова, Инна Владимировна 2022-05-26 14:06
@@ -172,25 +170,25 @@ class Application
             "отгрузкаТранзитом"  => $arInvoice[CRMFields::SHIPMENT_TRANSIT],
             // Добавил 2022-20-23. Попов, отключил 2022-20-26
             //            "покупательКлиентКомпания" => $arDeal['покупательКлиентКомпания'],
+            // Добавил 2022-06-30 Тихомирова
+            "комментарий"        => $arDeal['COMMENTS']
         ];
 
         return $arDealClean;
-    } //Потребитель
+    }
 
-//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
-
-    public
-    function stringCutGeo($hayStack, string $needle)
-    { //    адресу обрезать геокоординаты
+        public function stringCutGeo($hayStack, string $needle)
+    { //  адресу обрезать геокоординаты
 
         if (strpos($hayStack, $needle) !== false) {
             $hayStack = strtok($hayStack, $needle);
         }
         return $hayStack;
-    }
+    } //Потребитель
 
-    public
-    function getRequisites(int $idCompany): array
+//    public const CONSIGNEE = "UF_CRM_5F9BF01B2DD12"; //грузополучатель
+
+public function getRequisites(int $idCompany): array
     {
         $arRequisites = [
             "компанияНаименование"  => "-",
@@ -228,23 +226,23 @@ class Application
                 ]
             );
 
-            $sAdress = "";
+            $sAddress = "";
             $sDeliveryAdres = '';
             if (!empty($arCrmAddressList["result"])) {
-                foreach ($arCrmAddressList["result"] as $arOneAdress) {
+                foreach ($arCrmAddressList["result"] as $arOneAddress) {
                     $arCrmAdr = [];
-                    if ($arOneAdress["POSTAL_CODE"]) $arCrmAdr[] = $arOneAdress["POSTAL_CODE"];
-                    if ($arOneAdress["COUNTRY"]) $arCrmAdr[] = $arOneAdress["COUNTRY"];
-                    if ($arOneAdress["PROVINCE"]) $arCrmAdr[] = $arOneAdress["PROVINCE"];
-                    if ($arOneAdress["CITY"]) $arCrmAdr[] = $arOneAdress["CITY"];
-                    if ($arOneAdress["ADDRESS_1"]) $arCrmAdr[] = $arOneAdress["ADDRESS_1"];
-                    if ($arOneAdress["ADDRESS_2"]) $arCrmAdr[] = $arOneAdress["ADDRESS_2"];
+                    if ($arOneAddress["POSTAL_CODE"]) $arCrmAdr[] = $arOneAddress["POSTAL_CODE"];
+                    if ($arOneAddress["COUNTRY"]) $arCrmAdr[] = $arOneAddress["COUNTRY"];
+                    if ($arOneAddress["PROVINCE"]) $arCrmAdr[] = $arOneAddress["PROVINCE"];
+                    if ($arOneAddress["CITY"]) $arCrmAdr[] = $arOneAddress["CITY"];
+                    if ($arOneAddress["ADDRESS_1"]) $arCrmAdr[] = $arOneAddress["ADDRESS_1"];
+                    if ($arOneAddress["ADDRESS_2"]) $arCrmAdr[] = $arOneAddress["ADDRESS_2"];
 
-//                    if ($arOneAdress["TYPE_ID"] == 6) // юр адрес
+//                    if ($arOneAddress["TYPE_ID"] == 6) // юр адрес
 //                    {
-//                        $sAdress = implode(", ", $arCrmAdr);
+//                        $sAddress = implode(", ", $arCrmAdr);
 //                    }
-//                    if ($arOneAdress["TYPE_ID"] == 11) //  адрес доставки
+//                    if ($arOneAddress["TYPE_ID"] == 11) //  адрес доставки
 //                    {
 //                        $sDeliveryAdres = implode(", ", $arCrmAdr);
 //                    }
@@ -252,8 +250,8 @@ class Application
 // <грузополучатель>
 // <компанияАдресДоставки/> необходимо забрать юр.адрес из реквизитов компании
                     // Попов: делаю адреса одинаковыми
-                    $sAdress = implode(", ", $arCrmAdr);
-                    $sDeliveryAdres = $sAdress;
+                    $sAddress = implode(", ", $arCrmAdr);
+                    $sDeliveryAdres = $sAddress;
                 }
             }
 
@@ -261,15 +259,13 @@ class Application
 //                "компанияНаименование"  => $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] ? $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] : $arCrmRequisiteList["result"][0]["NAME"],
 "компанияНаименование"  => $arCrmRequisiteList["result"][0]["RQ_COMPANY_FULL_NAME"] ?: $arCrmRequisiteList["result"][0]["NAME"],
 "компанияИНН"           => $arCrmRequisiteList["result"][0]["RQ_INN"] ?: "-",
-"компанияЮрАдрес"       => $sAdress,
+"компанияЮрАдрес"       => $sAddress,
 "компанияАдресДоставки" => $sDeliveryAdres,
 "компанияКПП"           => $arCrmRequisiteList["result"][0]["RQ_KPP"] ?: "-",
             ];
         }
         return $arRequisites;
-    } //плательщик для ТК
-
-//    public const DELIVERY_ADRESS = "UF_CRM_1610367809"; // адрес доставки
+    }
 
     protected
     function getDealProducts(int $idInvoice): array
@@ -317,9 +313,11 @@ class Application
 
 
         return $arCrmRequest["result"];
-    } // Адрес доставки для ТК
+    } //плательщик для ТК
 
-    protected
+//    public const DELIVERY_Address = "UF_CRM_1610367809"; // адрес доставки
+
+        protected
     function getProductProperties(): array
     {
         $arProperties = [];
@@ -330,9 +328,9 @@ class Application
                 $arProperties[$arProperty["ID"]] = $arProperty;
 
         return $arProperties;
-    }
+    } // Адрес доставки для ТК
 
-    protected
+protected
     function getProductsFull(array $arProductIds = [], array $arProps = []): array
     {
         $arProducts = [];
@@ -368,17 +366,17 @@ class Application
                         ];
 
                         if (is_array($arField))
-                            if ($arProps[$idProperty]["MULTIPLE"] == "Y") {
+                            if ($arProps[$idProperty]["MULTIPLE"] === "Y") {
                                 $arPropertyValues = [];
                                 foreach ($arField as $arOneValue) {
-                                    if ($arProps[$idProperty]["PROPERTY_TYPE"] == "L")
+                                    if ($arProps[$idProperty]["PROPERTY_TYPE"] === "L")
                                         $arPropertyValues[] = $arProps[$idProperty]["VALUES"][$arOneValue["value"]]["VALUE"];
                                     else
                                         $arPropertyValues[] = $arOneValue["value"];
                                 }
                                 $newProperty["VALUE"] = $arPropertyValues;
                             } else
-                                if ($arProps[$idProperty]["PROPERTY_TYPE"] == "L")
+                                if ($arProps[$idProperty]["PROPERTY_TYPE"] === "L")
                                     $newProperty["VALUE"] = $arProps[$idProperty]["VALUES"][$arField["value"]]["VALUE"];
                                 else
                                     $newProperty["VALUE"] = $arField["value"];
@@ -391,10 +389,9 @@ class Application
                 $arProducts[$arProduct["ID"]] = $arProduct;
             }
         return $arProducts;
-    } // договор поставки
+    }
 
-    protected
-    function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
+    protected function prepareProductsForXml(array $arDirtyProducts = [], array $arInvoiceItems = []): array
     {
         if (empty($arDirtyProducts))
             return [];
@@ -405,7 +402,7 @@ class Application
 
         $arClearProducts = [];
         foreach ($arDirtyProducts as $arOneProduct) {
-            $bVatIncluded = ($arSortedItems[$arOneProduct['ID']]["VAT_INCLUDED"] == "Y");
+            $bVatIncluded = ($arSortedItems[$arOneProduct['ID']]["VAT_INCLUDED"] === "Y");
 
 
             if ($bVatIncluded) {
@@ -445,7 +442,7 @@ class Application
 
         }
         return $arClearProducts;
-    } // тип доставки
+    } // договор поставки
 
     protected
     function writeToFile($xml, array $arDataForXml, string $sectionName, string $elementName = "")
@@ -453,9 +450,7 @@ class Application
         $node = $xml->addChild($sectionName);
         $this->arrayToXml($arDataForXml, $node, $elementName);
 
-    } // Контактное лицо грузополучателя
-
-//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
+    } // тип доставки
 
     public function arrayToXml(array $array, &$xml, $elementName = "")
     {
@@ -478,9 +473,9 @@ class Application
                 $xml->addChild("$key", "$value");
             }
         }
-    } // инфоблок контрактов
+    } // Контактное лицо грузополучателя
 
-// Добавил 2021-10-29
+//public const DELIVERY_CONTACT = "UF_CRM_5F9BF01AAC772"; // контактное лицо при доставке
 
     protected function doFinalActions(int $idDeal): bool
     {
@@ -493,6 +488,25 @@ class Application
             return true;
         } else
             return false;
+    } // инфоблок контрактов
+
+// Добавил 2021-10-29
+
+        public function dealArrayAddCompanyPhone(&$arDeal): void
+    { // вернуть из сделки наименование компании покупателя
+
+        $company_Id = $arDeal['result']['COMPANY_ID'];
+
+        if ($company_Id !== '') {
+            $arCompany = CRest::call(
+                'crm.company.get',
+                [
+                    'id' => $company_Id
+                ]
+            );
+            $title = $arCompany['result']['TITLE'];
+            $arDeal['result']['покупательКлиентКомпания'] = $title;
+        }
     } // Условия оплаты
 
     public function log($variable, $comment): void
@@ -562,7 +576,7 @@ class CRMFields
     public const CONSUMER = "UF_CRM_5F9BF01B658A8";
     public const CONSIGNEE = "UF_CRM_613AF9D4D685D";
     public const PAYER = "UF_CRM_5F9BF01B7389A";
-    public const DELIVERY_ADRESS = "UF_CRM_60D96D778591E";
+    public const DELIVERY_Address = "UF_CRM_60D96D778591E";
     public const CONTRACT = "UF_CRM_1608889603";
     public const DELIVERY_TYPE = "UF_CRM_5F9BF01B5504B";
     public const DELIVERY_CONTACT = "UF_CRM_60D96D7707C69";
