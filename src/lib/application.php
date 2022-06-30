@@ -75,7 +75,7 @@ class Application
         if (!empty($arInvoiceUserfields["result"])) {
 
             foreach ($arInvoiceUserfields["result"] as $arField) {
-                if (array_key_exists($arField["FIELD_NAME"], $arCrmRequest["result"]) && $arField["USER_TYPE_ID"] == "enumeration") {
+                if (array_key_exists($arField["FIELD_NAME"], $arCrmRequest["result"]) && $arField["USER_TYPE_ID"] === "enumeration") {
                     if (isset($arCrmRequest["result"][$arField["FIELD_NAME"]]))
                         foreach ($arField["LIST"] as $arValue) {
                             if ($arValue["ID"] == $arCrmRequest["result"][$arField["FIELD_NAME"]])
@@ -100,7 +100,7 @@ class Application
         if (!empty($arDealUserfields["result"])) {
 
             foreach ($arDealUserfields["result"] as $arField) {
-                if (array_key_exists($arField["FIELD_NAME"], $arDeal["result"]) && $arField["USER_TYPE_ID"] == "enumeration") {
+                if (array_key_exists($arField["FIELD_NAME"], $arDeal["result"]) && $arField["USER_TYPE_ID"] === "enumeration") {
                     if (isset($arDeal["result"][$arField["FIELD_NAME"]]))
                         foreach ($arField["LIST"] as $arValue) {
                             if ($arValue["ID"] == $arDeal["result"][$arField["FIELD_NAME"]])
@@ -233,12 +233,12 @@ class Application
             if (!empty($arCrmAddressList["result"])) {
                 foreach ($arCrmAddressList["result"] as $arOneAdress) {
                     $arCrmAdr = [];
-                    if ($arOneAdress["POSTAL_CODE"]) array_push($arCrmAdr, $arOneAdress["POSTAL_CODE"]);
-                    if ($arOneAdress["COUNTRY"]) array_push($arCrmAdr, $arOneAdress["COUNTRY"]);
-                    if ($arOneAdress["PROVINCE"]) array_push($arCrmAdr, $arOneAdress["PROVINCE"]);
-                    if ($arOneAdress["CITY"]) array_push($arCrmAdr, $arOneAdress["CITY"]);
-                    if ($arOneAdress["ADDRESS_1"]) array_push($arCrmAdr, $arOneAdress["ADDRESS_1"]);
-                    if ($arOneAdress["ADDRESS_2"]) array_push($arCrmAdr, $arOneAdress["ADDRESS_2"]);
+                    if ($arOneAdress["POSTAL_CODE"]) $arCrmAdr[] = $arOneAdress["POSTAL_CODE"];
+                    if ($arOneAdress["COUNTRY"]) $arCrmAdr[] = $arOneAdress["COUNTRY"];
+                    if ($arOneAdress["PROVINCE"]) $arCrmAdr[] = $arOneAdress["PROVINCE"];
+                    if ($arOneAdress["CITY"]) $arCrmAdr[] = $arOneAdress["CITY"];
+                    if ($arOneAdress["ADDRESS_1"]) $arCrmAdr[] = $arOneAdress["ADDRESS_1"];
+                    if ($arOneAdress["ADDRESS_2"]) $arCrmAdr[] = $arOneAdress["ADDRESS_2"];
 
 //                    if ($arOneAdress["TYPE_ID"] == 6) // юр адрес
 //                    {
